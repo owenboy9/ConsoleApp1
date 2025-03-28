@@ -2,6 +2,150 @@
 using System.Collections.Generic;
 using System.Linq;
 
+
+namespace AssetTracker
+{
+    // Base class for all assets
+    abstract class Asset
+    {
+        public string Brand { get; set; }
+        public string Model { get; set; }
+        public DateTime PurchaseDate { get; set; }
+        public decimal Price { get; set; }
+
+        // Constructor
+        public Asset(string brand, string model, DateTime purchaseDate, decimal price)
+        {
+            Brand = brand;
+            Model = model;
+            PurchaseDate = purchaseDate;
+            Price = price;
+        }
+
+        // Abstract method to return asset type (e.g., Computer, Phone)
+        public abstract string GetAssetType();
+    }
+
+    // Computer class (inherits from Asset)
+    class Computer : Asset
+    {
+        public string Type { get; set; } // Laptop or Desktop
+
+        public Computer(string brand, string model, DateTime purchaseDate, decimal price, string type)
+            : base(brand, model, purchaseDate, price)
+        {
+            Type = type;
+        }
+
+        public override string GetAssetType()
+        {
+            return "Computer";
+        }
+    }
+
+    // Phone class (inherits from Asset)
+    class Phone : Asset
+    {
+        public string OS { get; set; } // iOS, Android, etc.
+
+        public Phone(string brand, string model, DateTime purchaseDate, decimal price, string os)
+            : base(brand, model, purchaseDate, price)
+        {
+            OS = os;
+        }
+
+        public override string GetAssetType()
+        {
+            return "Phone";
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            List<Asset> assets = new List<Asset>();
+
+            // User input loop
+            while (true)
+            {
+                Console.WriteLine("\nEnter asset type (Computer/Phone) or 'exit' to finish:");
+                string type = Console.ReadLine()?.Trim().ToLower();
+
+                if (type == "exit") break;
+
+                Console.Write("Enter brand: ");
+                string brand = Console.ReadLine();
+
+                Console.Write("Enter model: ");
+                string model = Console.ReadLine();
+
+                Console.Write("Enter purchase date (yyyy-mm-dd): ");
+                DateTime purchaseDate;
+                while (!DateTime.TryParse(Console.ReadLine(), out purchaseDate))
+                {
+                    Console.Write("Invalid date format! Enter again (yyyy-mm-dd): ");
+                }
+
+                Console.Write("Enter price: ");
+                decimal price;
+                while (!decimal.TryParse(Console.ReadLine(), out price))
+                {
+                    Console.Write("Invalid price! Enter again: ");
+                }
+
+                if (type == "computer")
+                {
+                    Console.Write("Enter type (Laptop/Desktop): ");
+                    string compType = Console.ReadLine();
+                    assets.Add(new Computer(brand, model, purchaseDate, price, compType));
+                }
+                else if (type == "phone")
+                {
+                    Console.Write("Enter operating system (iOS/Android/etc.): ");
+                    string os = Console.ReadLine();
+                    assets.Add(new Phone(brand, model, purchaseDate, price, os));
+                }
+                else
+                {
+                    Console.WriteLine("Invalid asset type! Please enter 'Computer' or 'Phone'.");
+                }
+            }
+
+            Console.WriteLine("\n--- Sorted Assets (By Type & Purchase Date) ---");
+            DisplaySortedAssets(assets);
+        }
+
+        static void DisplaySortedAssets(List<Asset> assets)
+        {
+            // Sorting: First by type (Computers first), then by purchase date (ascending)
+            var sortedAssets = assets.OrderBy(a => a.GetAssetType()).ThenBy(a => a.PurchaseDate).ToList();
+
+            DateTime today = DateTime.Today;
+            TimeSpan threeYears = TimeSpan.FromDays(3 * 365);
+            TimeSpan threeMonthsBeforeThreeYears = TimeSpan.FromDays((3 * 365) - 90);
+
+            foreach (var asset in sortedAssets)
+            {
+                bool isNearEndOfLife = (today - asset.PurchaseDate) >= threeMonthsBeforeThreeYears &&
+                                       (today - asset.PurchaseDate) < threeYears;
+
+                if (isNearEndOfLife)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red; // Highlight in red
+                }
+
+                Console.WriteLine($"{asset.GetAssetType()} | {asset.Brand} {asset.Model} | Purchased: {asset.PurchaseDate.ToShortDateString()} | Price: ${asset.Price}");
+
+                Console.ResetColor(); // Reset console color
+            }
+        }
+    }
+}
+
+
+
+/*
 class Program
 {
     static void Main()
@@ -123,3 +267,5 @@ class Product
         Price = price;
     }
 }
+
+*/
